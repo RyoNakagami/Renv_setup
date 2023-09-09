@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+## env setup
+Rscript $(dirname $0)/R_script/init.R
+
+## library install
+### select the file name
+TARGET_DIR=$(cd $(dirname $0); pwd)/package_template
+if [ "$1" = "" ]; then 
+    echo "renv setup is done without package install"; 
+    exit 0; 
+else 
+    SEARCH_FILE=$1; 
+    TARGET_FILE=$TARGET_DIR/$SEARCH_FILE;
+fi
+
+
+### install
+if [ -f $TARGET_FILE ]; then
+    read -p "Are you sure to install packages based on ($SEARCH_FILE)? (y/N): " yn
+    case "$yn" in
+        [yY]*) 
+            Rscript -e "install.packages($(sed -z 's/^/c("/;s/\n/","/g;s/,"$/)/' $TARGET_FILE))";;
+        *) echo "abort";;
+    esac
+else
+    echo "$SEARCH_FILE not exists.";
+    exit 1
+fi
